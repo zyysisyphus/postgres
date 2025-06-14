@@ -588,6 +588,8 @@ PostmasterMain(int argc, char *argv[])
 	 */
 	InitializeGUCOptions();
 
+	NBuffers = 65536;
+
 	opterr = 1;
 
 	/*
@@ -784,6 +786,8 @@ PostmasterMain(int argc, char *argv[])
 	 */
 	if (!SelectConfigFiles(userDoption, progname))
 		ExitPostmaster(2);
+
+	NBuffers = 65536;
 
 	if (output_config_variable != NULL)
 	{
