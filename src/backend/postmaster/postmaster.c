@@ -76,6 +76,7 @@
 #include <sys/param.h>
 #include <netdb.h>
 #include <limits.h>
+#include <sys/sysinfo.h>
 
 #ifdef USE_BONJOUR
 #include <dns_sd.h>
@@ -497,6 +498,7 @@ PostmasterMain(int argc, char *argv[])
 	char	   *userDoption = NULL;
 	bool		listen_addr_saved = false;
 	char	   *output_config_variable = NULL;
+	struct sysinfo info;
 
 	InitProcessGlobals();
 
@@ -587,8 +589,6 @@ PostmasterMain(int argc, char *argv[])
 	 * Options setup
 	 */
 	InitializeGUCOptions();
-
-	NBuffers = 65536;
 
 	opterr = 1;
 
@@ -787,7 +787,12 @@ PostmasterMain(int argc, char *argv[])
 	if (!SelectConfigFiles(userDoption, progname))
 		ExitPostmaster(2);
 
-	NBuffers = 65536;
+	if (sysinfo(&info) == 0)
+	{
+    	long total_memory_kb = info.totalram * info.mem_unit / 1024;
+    	long shared_buffers_kb = total_memory_kb / 3;
+    	NBuffers = shared_buffers_kb / 8;
+	}
 
 	if (output_config_variable != NULL)
 	{
